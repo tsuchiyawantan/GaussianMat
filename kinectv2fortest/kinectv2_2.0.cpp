@@ -15,7 +15,7 @@
 
 #define SPACESIZE 10
 #define SCALESIZE 1
-#define FILTERSIZE 5
+#define FILTERSIZE 31
 #define HUE 60
 
 string hstate[] = { "unknown", "nottracked", "Open", "Closed", "Lasso" };
@@ -74,8 +74,22 @@ void doArm2(cv::Mat &image, Log log, vector<vector<pair<int, int>>> &yx){
 void fixSize(int &y, int &x, cv::Mat &srcImg){
 	if (x < 0) { x = 0; }
 	if (y < 0) { y = 0; }
-	if (x >= srcImg.rows){ x = srcImg.rows-1; }
-	if (y >= srcImg.cols){ y = srcImg.cols-1; }
+	if (x >= srcImg.cols){ x = srcImg.cols-1; }
+	if (y >= srcImg.rows){ y = srcImg.rows-1; }
+}
+void fixSize2(int y1, int x1, int &y_sub, int &x_sub, cv::Mat &srcImg){
+	int y2 = y1 + y_sub;
+	int x2 = x1 + x_sub;
+
+	if (y2 >= srcImg.rows) {
+		y2 = srcImg.rows - 1;
+		y_sub = y2 - y1;
+	}
+	if (x2 >= srcImg.cols) {
+		x2 = srcImg.cols - 1;
+		x_sub = x2 - x1;
+	}
+	
 }
 
 void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLine){
@@ -92,7 +106,6 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	
 	//Opencv Gaussian
 	//cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
-	vector<pair<int, int>> test;
 
 	for (int i = 0; i < catmull.catmullLine.size(); i++){
 		for (int j = 0; j < catmull.catmullLine[i].size(); j = j+FILTERSIZE*2){
@@ -100,13 +113,15 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 			int x = catmull.catmullLine[i].at(j).second;
 			int x1 = x - FILTERSIZE;
 			int y1 = y - FILTERSIZE;
-			int x2 = FILTERSIZE*2;
 			int y2 = FILTERSIZE*2;
+			int x2 = FILTERSIZE * 2;
+
 			fixSize(y1, x1, resultImg);
-			test.push_back(make_pair(y1, x1));
+			fixSize2(y1, x1, y2, x2, resultImg);
+
 			
 			cv::Mat regionOfImage(resultImg, cv::Rect(x1, y1, x2, y2));
-			cv::GaussianBlur(regionOfImage, regionOfImage, cv::Size(FILTERSIZE, FILTERSIZE), 0, 0);
+			cv::GaussianBlur(regionOfImage, regionOfImage, cv::Size(17, 9), 0, 0);
 		}
 	}
 	catmull.drawInline(resultImg, HUE, FILTERSIZE);

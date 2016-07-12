@@ -78,6 +78,9 @@ public:
 		}
 
 	}
+	
+
+
 	void drawLine(cv::Mat &srcImg, vector<pair<int, int>> &contours, int hue){
 		NeonDesign design;
 		vector<int> bgr = { 0, 0, 0 };

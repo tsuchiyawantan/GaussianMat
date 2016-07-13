@@ -15,7 +15,7 @@
 
 #define SPACESIZE 10
 #define SCALESIZE 1
-#define FILTERSIZE 31
+#define FILTERSIZE 15
 #define HUE 60
 
 string hstate[] = { "unknown", "nottracked", "Open", "Closed", "Lasso" };
@@ -71,27 +71,6 @@ void doArm2(cv::Mat &image, Log log, vector<vector<pair<int, int>>> &yx){
 	cv::imshow("arm image", img);
 }
 
-void fixSize(int &y, int &x, cv::Mat &srcImg){
-	if (x < 0) { x = 0; }
-	if (y < 0) { y = 0; }
-	if (x >= srcImg.cols){ x = srcImg.cols-1; }
-	if (y >= srcImg.rows){ y = srcImg.rows-1; }
-}
-void fixSize2(int y1, int x1, int &y_sub, int &x_sub, cv::Mat &srcImg){
-	int y2 = y1 + y_sub;
-	int x2 = x1 + x_sub;
-
-	if (y2 >= srcImg.rows) {
-		y2 = srcImg.rows - 1;
-		y_sub = y2 - y1;
-	}
-	if (x2 >= srcImg.cols) {
-		x2 = srcImg.cols - 1;
-		x_sub = x2 - x1;
-	}
-	
-}
-
 void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLine){
 	loggg.Initialize("log2.txt");
 	cv::Mat resultImg = cv::Mat(srcImg.rows, srcImg.cols, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -99,30 +78,7 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	CatmullSpline catmull;
 	clock_t start = clock();
 	for (int i = 0; i < approximationLine.size(); i++){
-		catmull.drawLine(resultImg, approximationLine[i], HUE);
-	}
-	//SpaceFiltering
-	//catmull.exeGaussian(approximationLine, resultImg);
-	
-	//Opencv Gaussian
-	//cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
-
-	for (int i = 0; i < catmull.catmullLine.size(); i++){
-		for (int j = 0; j < catmull.catmullLine[i].size(); j = j+FILTERSIZE*2){
-			int y = catmull.catmullLine[i].at(j).first;
-			int x = catmull.catmullLine[i].at(j).second;
-			int x1 = x - FILTERSIZE;
-			int y1 = y - FILTERSIZE;
-			int y2 = FILTERSIZE*2;
-			int x2 = FILTERSIZE * 2;
-
-			fixSize(y1, x1, resultImg);
-			fixSize2(y1, x1, y2, x2, resultImg);
-
-			
-			cv::Mat regionOfImage(resultImg, cv::Rect(x1, y1, x2, y2));
-			cv::GaussianBlur(regionOfImage, regionOfImage, cv::Size(17, 9), 0, 0);
-		}
+		catmull.drawLinePROTO(resultImg, approximationLine[i], HUE);
 	}
 	catmull.drawInline(resultImg, HUE, FILTERSIZE);
 
@@ -142,7 +98,6 @@ void doDot(cv::Mat &srcImg){
 }
 void main() {
 	try {
-		
 			cv::Mat src_img = cv::imread("sample.jpg", 0);
 			//cv::Mat line_img = cv::Mat::zeros(cv::Size(640, 480), CV_8UC3);		
 			threshold(src_img, src_img, 150, 255, CV_THRESH_BINARY);

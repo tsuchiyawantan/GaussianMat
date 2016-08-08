@@ -12,6 +12,8 @@
 #include "CatmullSpline.h"
 #include "Gaussian.h"
 #include <math.h>
+#include <omp.h>
+
 
 #define SPACESIZE 10
 #define SCALESIZE 1
@@ -80,9 +82,9 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	for (int i = 0; i < approximationLine.size(); i++){
 		catmull.drawLinePROTO(resultImg, approximationLine[i], HUE);
 	}
+	clock_t end = clock();
 	catmull.drawInline(resultImg, HUE, FILTERSIZE);
 
-	clock_t end = clock();
 	loggg.Write("draw‚©‚çinline‚Ü‚Å: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
 	cv::imshow("Catmull Spline", resultImg);
 }

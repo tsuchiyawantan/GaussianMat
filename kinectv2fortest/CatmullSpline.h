@@ -7,6 +7,8 @@
 #include <time.h>
 #include "ExecuteSpaceFiltering.h"
 #include "NeonDesign.h"
+#include <omp.h>
+
 
 using namespace std;
 
@@ -118,19 +120,18 @@ public:
 
 	void doGaussianPROTO(vector<pair<int, int>> &catCtr, cv::Mat &srcImg){
 		int mid = catCtr.size() / 2;
-		int filtersize = mid;
 		int y = catCtr.at(mid).first;
 		int x = catCtr.at(mid).second;
-		int x1 = x - filtersize;
-		int y1 = y - filtersize;
-		int y2 = filtersize * 2;
-		int x2 = filtersize * 2;
-
+		int x1 = x - mid;
+		int y1 = y - mid;
+		int y2 = mid * 2;
+		int x2 = mid * 2;
+		int filtersize = mid*2+1;
 		fixSize(y1, x1, srcImg);
 		fixSize2(y1, x1, y2, x2, srcImg);
 
 		cv::Mat regionOfImage(srcImg, cv::Rect(x1, y1, x2, y2));
-		cv::GaussianBlur(regionOfImage, regionOfImage, cv::Size(3, 3), 0, 0);
+		cv::GaussianBlur(regionOfImage, regionOfImage, cv::Size(filtersize, filtersize), 0, 0);
 	}
 
 	void fixSize(int &y, int &x, cv::Mat &srcImg){
@@ -154,11 +155,13 @@ public:
 	}
 
 	void drawLinePROTO(cv::Mat &srcImg, vector<pair<int, int>> &contours, int hue){
+		int contours_size = contours.size();
 		NeonDesign design;
 		vector<int> bgr = { 0, 0, 0 };
 		vector<pair<int, int>> ctr;
 		vector<pair<int, int>> catCtr;
 		design.rgb(hue, 255, 255 - 100, bgr);
+		
 		for (int i = 0; i < contours.size(); i++){
 
 			int y = contours.at(i).first;
@@ -170,17 +173,17 @@ public:
 					x = catmullRomFirstLast(contours.at(0).second, contours.at(1).second, t);
 					ctr.push_back(make_pair(y, x));
 					catCtr.push_back(make_pair(y, x));
-					circle(srcImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(srcImg, cv::Point(x, y), 1, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), .1, 4);
 				}
 				doGaussianPROTO(catCtr, srcImg);
 				catCtr.clear();
 			}
-			for (double t = 0; t <= 1.0; t += 0.05){
+			for (double t = 0; t <= 1.0; t += 0.07){
 				y = catmullRom(contours.at(i).first, contours.at(i + 1).first, contours.at(i + 2).first, contours.at(i + 3).first, t);
 				x = catmullRom(contours.at(i).second, contours.at(i + 1).second, contours.at(i + 2).second, contours.at(i + 3).second, t);
 				ctr.push_back(make_pair(y, x));
 				catCtr.push_back(make_pair(y, x));
-				circle(srcImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+				circle(srcImg, cv::Point(x, y), 1, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), .1, 4);
 			}
 			doGaussianPROTO(catCtr, srcImg);
 			catCtr.clear();
@@ -190,7 +193,7 @@ public:
 					x = catmullRomFirstLast(contours.at(contours.size() - 2).second, contours.at(contours.size() - 1).second, t);
 					ctr.push_back(make_pair(y, x));
 					catCtr.push_back(make_pair(y, x));
-					circle(srcImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(srcImg, cv::Point(x, y), 1, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), .1, 4);
 				}
 				doGaussianPROTO(catCtr, srcImg);
 				catCtr.clear();

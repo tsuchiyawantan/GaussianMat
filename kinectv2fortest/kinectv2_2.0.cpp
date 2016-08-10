@@ -80,10 +80,13 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	CatmullSpline catmull;
 	clock_t start = clock();
 	for (int i = 0; i < approximationLine.size(); i++){
-		catmull.drawLinePROTO(resultImg, approximationLine[i], HUE);
+		catmull.drawLine(resultImg, approximationLine[i], HUE);
 	}
 	clock_t end = clock();
-	catmull.drawInline(resultImg, HUE, FILTERSIZE);
+	catmull.exeGaussian(resultImg, resultImg2);
+	cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
+
+	//catmull.drawInline(resultImg, HUE, FILTERSIZE);
 
 	loggg.Write("draw‚©‚çinline‚Ü‚Å: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
 	cv::imshow("Catmull Spline", resultImg);

@@ -9,6 +9,7 @@
 #include "NeonDesign.h"
 #include <omp.h>
 
+#define FILTERSIZE 3
 
 using namespace std;
 
@@ -62,6 +63,25 @@ public:
 			}
 		}
 		srcImg = resultImg;
+	}
+	void exeGaussian(cv::Mat &srcImg, cv::Mat &resultImg){
+		ExecuteSpaceFiltering spaceFilter(FILTERSIZE);
+		
+	}
+	void drawLinePROT(cv::Mat &srcImg, vector<pair<int, int>> &contours, int hue){
+		NeonDesign design;
+		vector<int> bgr = { 0, 0, 0 };
+		vector<pair<int, int>> ctr;
+
+		design.rgb(hue, 255, 255 - 100, bgr);
+		for (int i = 0; i < contours.size(); i++){
+			int y = contours.at(i).first;
+			int x = contours.at(i).second;
+			if (i >= contours.size() || i + 1 >= contours.size() || i + 2 >= contours.size() || i + 3 >= contours.size()) break;
+
+				circle(srcImg, cv::Point(x, y), 5, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+		}
+		catmullLine.push_back(ctr);
 	}
 
 	void drawInline(cv::Mat &srcImg, int hue, int filtersize){

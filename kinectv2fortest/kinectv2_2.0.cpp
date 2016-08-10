@@ -84,7 +84,7 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	}
 	clock_t end = clock();
 	catmull.exeGaussian(resultImg, resultImg2);
-	cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
+	//cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
 
 	//catmull.drawInline(resultImg, HUE, FILTERSIZE);
 

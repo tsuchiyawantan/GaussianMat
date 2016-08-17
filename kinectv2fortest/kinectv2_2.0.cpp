@@ -75,21 +75,23 @@ void doArm2(cv::Mat &image, Log log, vector<vector<pair<int, int>>> &yx){
 
 void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLine){
 	loggg.Initialize("log2.txt");
-	cv::Mat resultImg = cv::Mat(srcImg.rows, srcImg.cols, CV_8UC3, cv::Scalar(0, 0, 0));
-	cv::Mat resultImg2 = cv::Mat(srcImg.rows, srcImg.cols, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::Mat outerImg = cv::Mat(srcImg.rows*SCALESIZE, srcImg.cols*SCALESIZE, CV_8UC3, cv::Scalar(0, 0, 0));
+	cv::Mat gaussianResultImg = cv::Mat(srcImg.rows*SCALESIZE, srcImg.cols*SCALESIZE, CV_8UC3, cv::Scalar(0, 0, 0));
+
 	CatmullSpline catmull;
 	clock_t start = clock();
 	for (int i = 0; i < approximationLine.size(); i++){
-		catmull.drawLine(resultImg, approximationLine[i], HUE);
+		catmull.drawLine(outerImg, approximationLine[i], HUE);
 	}
+	catmull.exeGaussian(outerImg, gaussianResultImg);
 	clock_t end = clock();
-	catmull.exeGaussian(resultImg, resultImg2);
 	//cv::GaussianBlur(resultImg, resultImg, cv::Size(19, 15), 0, 0);
 
-	//catmull.drawInline(resultImg, HUE, FILTERSIZE);
+	//catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);
 
 	loggg.Write("draw‚©‚çinline‚Ü‚Å: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
-	cv::imshow("Catmull Spline", resultImg);
+	cv::imshow("outer", outerImg);
+	cv::imshow("gaussian", gaussianResultImg);
 }
 
 void doDot(cv::Mat &srcImg){

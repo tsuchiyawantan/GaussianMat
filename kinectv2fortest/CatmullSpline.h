@@ -9,7 +9,7 @@
 #include "NeonDesign.h"
 #include <omp.h>
 
-#define FILTERSIZE 3
+#define FILTERSIZE 9
 
 using namespace std;
 
@@ -64,9 +64,17 @@ public:
 		}
 		srcImg = resultImg;
 	}
-	void exeGaussian(cv::Mat &srcImg, cv::Mat &resultImg){
-		ExecuteSpaceFiltering spaceFilter(FILTERSIZE);
-		
+	void exeGaussian(cv::Mat &outerImg, cv::Mat &gaussianResultImg){
+		ExecuteSpaceFiltering sf(FILTERSIZE);
+		//空間フィルタ処理した点ならば白255、してなければ黒0
+		cv::Mat usedPoints = cv::Mat(gaussianResultImg.rows, gaussianResultImg.cols, CV_8UC1, cv::Scalar(0));
+		for (int i = 0; i < catmullLine.size(); i++){
+			for (int j = 0; j < catmullLine[i].size(); j++){
+				int y = catmullLine[i].at(j).first;
+				int x = catmullLine[i].at(j).second;
+				sf.executeSpaceFilteringCircle(outerImg, gaussianResultImg, usedPoints, y, x);
+			}
+		}
 	}
 	void drawLinePROT(cv::Mat &srcImg, vector<pair<int, int>> &contours, int hue){
 		NeonDesign design;
@@ -78,6 +86,7 @@ public:
 			int y = contours.at(i).first;
 			int x = contours.at(i).second;
 			if (i >= contours.size() || i + 1 >= contours.size() || i + 2 >= contours.size() || i + 3 >= contours.size()) break;
+				cv::Mat resultImg2 = cv::Mat(srcImg.rows, srcImg.cols, CV_8UC3, cv::Scalar(0, 0, 0));
 
 				circle(srcImg, cv::Point(x, y), 5, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 		}
@@ -101,7 +110,7 @@ public:
 
 	}
 	
-	void drawLine(cv::Mat &srcImg, vector<pair<int, int>> &contours, int hue){
+	void drawLine(cv::Mat &resultImg, vector<pair<int, int>> &contours, int hue){
 		NeonDesign design;
 		vector<int> bgr = { 0, 0, 0 };
 		vector<pair<int, int>> ctr;
@@ -116,21 +125,21 @@ public:
 					y = catmullRomFirstLast(contours.at(0).first, contours.at(1).first, t);
 					x = catmullRomFirstLast(contours.at(0).second, contours.at(1).second, t);
 					ctr.push_back(make_pair(y, x));
-					circle(srcImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 				}
 			}
 			for (double t = 0; t <= 1.0; t += 0.05){
 				y = catmullRom(contours.at(i).first, contours.at(i + 1).first, contours.at(i + 2).first, contours.at(i + 3).first, t);
 				x = catmullRom(contours.at(i).second, contours.at(i + 1).second, contours.at(i + 2).second, contours.at(i + 3).second, t);
 				ctr.push_back(make_pair(y, x));
-				circle(srcImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+				circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 			}
 			if (i == contours.size() - 4){
 				for (double t = 0; t <= 1.0; t += 0.1){
 					y = catmullRomFirstLast(contours.at(contours.size() - 2).first, contours.at(contours.size() - 1).first, t);
 					x = catmullRomFirstLast(contours.at(contours.size() - 2).second, contours.at(contours.size() - 1).second, t);
 					ctr.push_back(make_pair(y, x));
-					circle(srcImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
 				}
 			}
 

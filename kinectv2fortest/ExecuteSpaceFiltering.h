@@ -8,6 +8,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>
 
+#define CIRCLE_RADIUS 2;
 using namespace std;
 
 
@@ -17,9 +18,11 @@ public:
 	vector<double> filter;
 	double filtersize;
 	cv::Mat image2;
+	vector<pair<int, int>> neighbour;
 
 	ExecuteSpaceFiltering(double filter_size){
 		filtersize = filter_size;
+		createNeighbour(sqrt(filtersize));
 	}
 	~ExecuteSpaceFiltering(){}
 
@@ -28,7 +31,7 @@ public:
 		for (int i = 0; i < filtersize; i++)
 			filter.push_back(filter_value);
 	}
-	void createNeighbour(int size, vector<pair<int, int>> &neighbour){
+	void createNeighbour(int size){
 		// 範囲チェック
 		if (size < 3) {
 			size = 3;
@@ -101,7 +104,7 @@ public:
 		int width = srcImg.cols;
 		int height = srcImg.rows;
 		filter.clear();
-		createNeighbour(sqrt(filtersize), neighbour);
+		createNeighbour(sqrt(filtersize));
 		applyFiltering(y, x, neighbour, bgr, srcImg);
 
 		// valueR, valueG, valueB の値を0～255の範囲にする
@@ -126,7 +129,7 @@ public:
 		image2 = cv::Mat(srcImg.size(), srcImg.type(), cvScalarAll(255));
 		int width = srcImg.cols;
 		int height = srcImg.rows;
-		createNeighbour(sqrt(filtersize), neighbour);
+		createNeighbour(sqrt(filtersize));
 
 		//
 		// 各スキャンラインごとに
@@ -153,6 +156,48 @@ public:
 				image2.at<cv::Vec3b>(y, x)[0] = bgr.at(0);
 				image2.at<cv::Vec3b>(y, x)[1] = bgr.at(1);
 				image2.at<cv::Vec3b>(y, x)[2] = bgr.at(2);
+			}
+		}
+	}
+	//
+	// 空間フィルタリングを用いた画像処理の例
+	//
+	void executeSpaceFilteringCircle(cv::Mat &srcImg, cv::Mat &resultImg, cv::Mat &usedPoints, int y, int x) {
+		vector<double> bgr(3, 0.0);
+
+
+		//
+		// 各スキャンラインごとに
+		//
+		int i = y - CIRCLE_RADIUS;
+		int j = x - CIRCLE_RADIUS;
+		int height = y + 1 + CIRCLE_RADIUS;
+		int width = x + 1+ CIRCLE_RADIUS;
+
+		for (i; i < height; i++) {
+
+			//
+			// 各画素ごとに
+			//
+			for (j; j < width; j++) {
+				bgr = { 0.0, 0.0, 0.0 };
+				//空間フィルタリング処理済み点ならば飛ばす
+				if (usedPoints.at<UCHAR>(i, j) == 255) continue;
+
+				applyFiltering(i, j, neighbour, bgr, srcImg);
+				// valueR, valueG, valueB の値を0～255の範囲にする
+				if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
+				if (bgr.at(2) > 255.0) bgr.at(2) = 255.0;
+				if (bgr.at(1) < 0.0) bgr.at(1) = 0.0;
+				if (bgr.at(1) > 255.0) bgr.at(1) = 255.0;
+				if (bgr.at(0) < 0.0) bgr.at(0) = 0.0;
+				if (bgr.at(0) > 255.0) bgr.at(0) = 255.0;
+
+				resultImg.at<cv::Vec3b>(i, j)[0] = bgr.at(0);
+				resultImg.at<cv::Vec3b>(i, j)[1] = bgr.at(1);
+				resultImg.at<cv::Vec3b>(i, j)[2] = bgr.at(2);
+
+				usedPoints.at<UCHAR>(i, j) = 255;
 			}
 		}
 	}

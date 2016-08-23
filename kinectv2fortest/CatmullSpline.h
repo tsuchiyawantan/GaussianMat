@@ -9,7 +9,7 @@
 #include "NeonDesign.h"
 #include <omp.h>
 
-#define FILTERSIZE 9
+#define FILTERSIZE 81
 
 using namespace std;
 
@@ -68,10 +68,11 @@ public:
 		ExecuteSpaceFiltering sf(FILTERSIZE);
 		//空間フィルタ処理した点ならば白255、してなければ黒0
 		cv::Mat usedPoints = cv::Mat(gaussianResultImg.rows, gaussianResultImg.cols, CV_8UC1, cv::Scalar(0));
-		for (int i = 0; i < catmullLine.size(); i++){
-			for (int j = 0; j < catmullLine[i].size(); j++){
-				int y = catmullLine[i].at(j).first;
-				int x = catmullLine[i].at(j).second;
+
+		for (auto itrI = catmullLine.begin(); itrI != catmullLine.end(); ++itrI){
+			for (auto itrJ = (*itrI).begin(); itrJ != (*itrI).end(); ++itrJ){
+				int y = (*itrJ).first;
+				int x = (*itrJ).second;
 				sf.executeSpaceFilteringCircle(outerImg, gaussianResultImg, usedPoints, y, x);
 			}
 		}

@@ -88,13 +88,17 @@ public:
 	}
 
 	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, vector<double> &bgr, cv::Mat &srcImg){
-		for (int i = 0; i < neighbour.size(); i++){
+			cv::Vec3b* ptr;
+			for (int i = 0; i < neighbour.size(); i++){
+
 			int dy = y + neighbour.at(i).first;
 			int dx = x + neighbour.at(i).second;
 			if (dy < 0 || dy >= srcImg.rows || dx < 0 || dx >= srcImg.cols) continue;
-			bgr.at(0) += srcImg.at<cv::Vec3b>(dy, dx)[0] * filter.at(i);
-			bgr.at(1) += srcImg.at<cv::Vec3b>(dy, dx)[1] * filter.at(i);
-			bgr.at(2) += srcImg.at<cv::Vec3b>(dy, dx)[2] * filter.at(i);
+			ptr = srcImg.ptr<cv::Vec3b>(dy);
+
+			bgr.at(0) += ptr[dx][0] * filter.at(i);
+			bgr.at(1) += ptr[dx][1] * filter.at(i);
+			bgr.at(2) += ptr[dx][2] * filter.at(i);
 		}
 	}
 
@@ -171,33 +175,35 @@ public:
 		//
 		int i = y - CIRCLE_RADIUS;
 		int j = x - CIRCLE_RADIUS;
-		int height = y + 1 + CIRCLE_RADIUS;
-		int width = x + 1+ CIRCLE_RADIUS;
+		int height = y + 10 + CIRCLE_RADIUS;
+		int width = x + 10 + CIRCLE_RADIUS;
 
 		for (i; i < height; i++) {
-
+			cv::Vec3b* ptrResult;
 			//
 			// 各画素ごとに
 			//
 			for (j; j < width; j++) {
 				bgr = { 0.0, 0.0, 0.0 };
+
 				//空間フィルタリング処理済み点ならば飛ばす
-				if (usedPoints.at<UCHAR>(i, j) == 255) continue;
+				unsigned char *p = &usedPoints.at<uchar>(i, j);
+				if (*p == 255) continue;
+		
+				ptrResult = resultImg.ptr<cv::Vec3b>(i);
 
 				applyFiltering(i, j, neighbour, bgr, srcImg);
 				// valueR, valueG, valueB の値を0～255の範囲にする
 				if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
-				if (bgr.at(2) > 255.0) bgr.at(2) = 255.0;
+				else if (bgr.at(2) > 255.0) bgr.at(2) = 255.0;
 				if (bgr.at(1) < 0.0) bgr.at(1) = 0.0;
-				if (bgr.at(1) > 255.0) bgr.at(1) = 255.0;
+				else if (bgr.at(1) > 255.0) bgr.at(1) = 255.0;
 				if (bgr.at(0) < 0.0) bgr.at(0) = 0.0;
-				if (bgr.at(0) > 255.0) bgr.at(0) = 255.0;
+				else if (bgr.at(0) > 255.0) bgr.at(0) = 255.0;
 
-				resultImg.at<cv::Vec3b>(i, j)[0] = bgr.at(0);
-				resultImg.at<cv::Vec3b>(i, j)[1] = bgr.at(1);
-				resultImg.at<cv::Vec3b>(i, j)[2] = bgr.at(2);
 
-				usedPoints.at<UCHAR>(i, j) = 255;
+				ptrResult[j] = cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2));
+				*p = 255;
 			}
 		}
 	}

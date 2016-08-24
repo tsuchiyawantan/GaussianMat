@@ -85,7 +85,7 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	}
 	catmull.exeGaussian(outerImg, gaussianResultImg);
 //	cv::GaussianBlur(outerImg, gaussianResultImg, cv::Size(19, 15), 0, 0);
-	//catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);
+	catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);
 	clock_t end = clock();
 	loggg.Write("draw‚©‚çinline‚Ü‚Å: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
 	cv::imshow("outer", outerImg);

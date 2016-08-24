@@ -68,7 +68,6 @@ public:
 		ExecuteSpaceFiltering sf(FILTERSIZE);
 		//空間フィルタ処理した点ならば白255、してなければ黒0
 		cv::Mat usedPoints = cv::Mat(gaussianResultImg.rows, gaussianResultImg.cols, CV_8UC1, cv::Scalar(0));
-
 		for (auto itrI = catmullLine.begin(); itrI != catmullLine.end(); ++itrI){
 			for (auto itrJ = (*itrI).begin(); itrJ != (*itrI).end(); ++itrJ){
 				int y = (*itrJ).first;
@@ -126,21 +125,21 @@ public:
 					y = catmullRomFirstLast(contours.at(0).first, contours.at(1).first, t);
 					x = catmullRomFirstLast(contours.at(0).second, contours.at(1).second, t);
 					ctr.push_back(make_pair(y, x));
-					circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 8);
 				}
 			}
 			for (double t = 0; t <= 1.0; t += 0.05){
 				y = catmullRom(contours.at(i).first, contours.at(i + 1).first, contours.at(i + 2).first, contours.at(i + 3).first, t);
 				x = catmullRom(contours.at(i).second, contours.at(i + 1).second, contours.at(i + 2).second, contours.at(i + 3).second, t);
 				ctr.push_back(make_pair(y, x));
-				circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+				circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 8);
 			}
 			if (i == contours.size() - 4){
 				for (double t = 0; t <= 1.0; t += 0.1){
 					y = catmullRomFirstLast(contours.at(contours.size() - 2).first, contours.at(contours.size() - 1).first, t);
 					x = catmullRomFirstLast(contours.at(contours.size() - 2).second, contours.at(contours.size() - 1).second, t);
 					ctr.push_back(make_pair(y, x));
-					circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 4);
+					circle(resultImg, cv::Point(x, y), 2, cv::Scalar(bgr.at(0), bgr.at(1), bgr.at(2)), -1, 8);
 				}
 			}
 

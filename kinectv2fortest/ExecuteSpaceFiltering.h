@@ -88,9 +88,8 @@ public:
 	}
 
 	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, vector<double> &bgr, cv::Mat &srcImg){
-			cv::Vec3b* ptr;
-			for (int i = 0; i < neighbour.size(); i++){
-
+		cv::Vec3b* ptr;
+		for (int i = 0; i < neighbour.size(); i++){
 			int dy = y + neighbour.at(i).first;
 			int dx = x + neighbour.at(i).second;
 			if (dy < 0 || dy >= srcImg.rows || dx < 0 || dx >= srcImg.cols) continue;
@@ -100,6 +99,7 @@ public:
 			bgr.at(1) += ptr[dx][1] * filter.at(i);
 			bgr.at(2) += ptr[dx][2] * filter.at(i);
 		}
+
 	}
 
 	void executeSpaceFilteringYX(int y, int x, cv::Mat &srcImg, cv::Mat &resultImg){
@@ -173,23 +173,24 @@ public:
 		//
 		// 各スキャンラインごとに
 		//
-		int i = y - CIRCLE_RADIUS;
-		int j = x - CIRCLE_RADIUS;
-		int height = y + 10 + CIRCLE_RADIUS;
-		int width = x + 10 + CIRCLE_RADIUS;
+		int idef = y - 2 - CIRCLE_RADIUS;
+		int jdef = x - 2 - CIRCLE_RADIUS;
+		int height = y + 2 + CIRCLE_RADIUS;
+		int width = x + 2 + CIRCLE_RADIUS;
 
-		for (i; i < height; i++) {
+		for (int i=idef; i <= height; i++) {
 			cv::Vec3b* ptrResult;
 			//
 			// 各画素ごとに
 			//
-			for (j; j < width; j++) {
+			for (int j=jdef; j <= width; j++) {
+				if (i < 0 || i >= srcImg.rows || j < 0 || j >= srcImg.cols) continue;
 				bgr = { 0.0, 0.0, 0.0 };
 
 				//空間フィルタリング処理済み点ならば飛ばす
 				unsigned char *p = &usedPoints.at<uchar>(i, j);
 				if (*p == 255) continue;
-		
+
 				ptrResult = resultImg.ptr<cv::Vec3b>(i);
 
 				applyFiltering(i, j, neighbour, bgr, srcImg);
@@ -203,7 +204,11 @@ public:
 
 
 				ptrResult[j] = cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2));
-				*p = 255;
+				//ptrResult[j] = cv::Vec3b(255, 0, 0);
+
+				if (cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2)) != cv::Vec3b(bgr.at(0), bgr.at(0), bgr.at(0)))
+					*p = 255;
+				
 			}
 		}
 	}

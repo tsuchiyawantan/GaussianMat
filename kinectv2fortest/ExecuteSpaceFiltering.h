@@ -89,6 +89,17 @@ public:
 
 	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, vector<double> &bgr, cv::Mat &srcImg){
 		cv::Vec3b* ptr;
+		/*double filter = 1 / filtersize;
+		for (auto itr = neighbour.begin(); itr != neighbour.end(); ++itr){
+			int dy = y + (*itr).first;
+			int dx = x + (*itr).second;
+			if (dy < 0 || dy >= srcImg.rows || dx < 0 || dx >= srcImg.cols) continue;
+			ptr = srcImg.ptr<cv::Vec3b>(dy);
+
+			bgr.at(0) += ptr[dx][0] * filter;
+			bgr.at(1) += ptr[dx][1] * filter;
+			bgr.at(2) += ptr[dx][2] * filter;
+		}*/
 		for (int i = 0; i < neighbour.size(); i++){
 			int dy = y + neighbour.at(i).first;
 			int dx = x + neighbour.at(i).second;
@@ -99,70 +110,9 @@ public:
 			bgr.at(1) += ptr[dx][1] * filter.at(i);
 			bgr.at(2) += ptr[dx][2] * filter.at(i);
 		}
-
+		
 	}
-
-	void executeSpaceFilteringYX(int y, int x, cv::Mat &srcImg, cv::Mat &resultImg){
-		vector<pair<int, int>> neighbour;
-		vector<double> bgr(3, 0.0);
-		int width = srcImg.cols;
-		int height = srcImg.rows;
-		filter.clear();
-		createNeighbour(sqrt(filtersize));
-		applyFiltering(y, x, neighbour, bgr, srcImg);
-
-		// valueR, valueG, valueB の値を0～255の範囲にする
-		if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
-		if (bgr.at(2) > 255.0) bgr.at(2) = 255.0;
-		if (bgr.at(1) < 0.0) bgr.at(1) = 0.0;
-		if (bgr.at(1) > 255.0) bgr.at(1) = 255.0;
-		if (bgr.at(0) < 0.0) bgr.at(0) = 0.0;
-		if (bgr.at(0) > 255.0) bgr.at(0) = 255.0;
-
-		resultImg.at<cv::Vec3b>(y, x)[0] = bgr.at(0);
-		resultImg.at<cv::Vec3b>(y, x)[1] = bgr.at(1);
-		resultImg.at<cv::Vec3b>(y, x)[2] = bgr.at(2);
-	}
-
-	//
-	// 空間フィルタリングを用いた画像処理の例
-	//
-	void executeSpaceFilteringAll(cv::Mat &srcImg) {
-		vector<pair<int, int>> neighbour;
-		vector<double> bgr(3, 0.0);
-		image2 = cv::Mat(srcImg.size(), srcImg.type(), cvScalarAll(255));
-		int width = srcImg.cols;
-		int height = srcImg.rows;
-		createNeighbour(sqrt(filtersize));
-
-		//
-		// 各スキャンラインごとに
-		//
-		for (int i = 0; i < height; i++) {
-
-			//
-			// 各画素ごとに
-			//
-			for (int j = 0; j < width; j++) {
-				bgr = { 0.0, 0.0, 0.0 };
-				int y = i;
-				int x = j;
-				applyFiltering(y, x, neighbour, bgr, srcImg);
-
-				// valueR, valueG, valueB の値を0～255の範囲にする
-				if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
-				if (bgr.at(2) > 255.0) bgr.at(2) = 255.0;
-				if (bgr.at(1) < 0.0) bgr.at(1) = 0.0;
-				if (bgr.at(1) > 255.0) bgr.at(1) = 255.0;
-				if (bgr.at(0) < 0.0) bgr.at(0) = 0.0;
-				if (bgr.at(0) > 255.0) bgr.at(0) = 255.0;
-
-				image2.at<cv::Vec3b>(y, x)[0] = bgr.at(0);
-				image2.at<cv::Vec3b>(y, x)[1] = bgr.at(1);
-				image2.at<cv::Vec3b>(y, x)[2] = bgr.at(2);
-			}
-		}
-	}
+	
 	//
 	// 空間フィルタリングを用いた画像処理の例
 	//
@@ -204,7 +154,6 @@ public:
 
 
 				ptrResult[j] = cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2));
-				//ptrResult[j] = cv::Vec3b(255, 0, 0);
 
 				if (cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2)) != cv::Vec3b(bgr.at(0), bgr.at(0), bgr.at(0)))
 					*p = 255;

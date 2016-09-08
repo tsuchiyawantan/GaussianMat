@@ -5,7 +5,6 @@
 #include "KinectControl.h"
 #include "Depth.h"
 #include "Dot.h"
-#include "Bezier.h"
 #include "NeonDesign.h"
 #include "Log.h"
 #include "ArmMovements.h"
@@ -83,8 +82,8 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	for (int i = 0; i < approximationLine.size(); i++){
 		catmull.drawLine(outerImg, approximationLine[i], HUE);
 	}
-	catmull.exeGaussian(outerImg, gaussianResultImg);
-//	cv::GaussianBlur(outerImg, gaussianResultImg, cv::Size(19, 15), 0, 0);
+	catmull.exeGaussian(outerImg, gaussianResultImg, loggg);
+	//cv::blur(outerImg, gaussianResultImg, cv::Size(15, 15));
 	catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);
 	clock_t end = clock();
 	loggg.Write("draw‚©‚çinline‚Ü‚Å: " + to_string((double)(end - start) / CLOCKS_PER_SEC));

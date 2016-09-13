@@ -8,6 +8,8 @@
 #include "ExecuteSpaceFiltering.h"
 #include "NeonDesign.h"
 #include <omp.h>
+#include "Log.h"
+
 
 #define FILTERSIZE 81
 
@@ -64,14 +66,10 @@ public:
 		}
 		srcImg = resultImg;
 	}
-	void exeGaussian(cv::Mat &outerImg, cv::Mat &gaussianResultImg, Log loggg){
-		clock_t start = clock();
+	void exeGaussian(cv::Mat &outerImg, cv::Mat &gaussianResultImg){
 		ExecuteSpaceFiltering sf(FILTERSIZE);
-		clock_t end = clock();
-		loggg.Write("exeGaussianの中sf: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
 		//空間フィルタ処理した点ならば白255、してなければ黒0
 		cv::Mat usedPoints = cv::Mat(gaussianResultImg.rows, gaussianResultImg.cols, CV_8UC1, cv::Scalar(0));
-		 start = clock();
 
 		for (auto itrI = catmullLine.begin(); itrI != catmullLine.end(); ++itrI){
 			for (auto itrJ = (*itrI).begin(); itrJ != (*itrI).end(); ++itrJ){
@@ -80,9 +78,26 @@ public:
 				sf.executeSpaceFilteringCircle(outerImg, gaussianResultImg, usedPoints, y, x);
 			}
 		}
-		 end = clock();
-		loggg.Write("exeGaussianの中2重ループ: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
+	}
 
+	void exeGaussian(cv::Mat &outerImg, cv::Mat &gaussianResultImg, Log log){
+		clock_t start = clock();
+		ExecuteSpaceFiltering sf(FILTERSIZE);
+
+		//空間フィルタ処理した点ならば白255、してなければ黒0
+		cv::Mat usedPoints = cv::Mat(gaussianResultImg.rows, gaussianResultImg.cols, CV_8UC1, cv::Scalar(0));
+
+		for (auto itrI = catmullLine.begin(); itrI != catmullLine.end(); ++itrI){
+			for (auto itrJ = (*itrI).begin(); itrJ != (*itrI).end(); ++itrJ){
+				int y = (*itrJ).first;
+				int x = (*itrJ).second;
+				//sf.executeSpaceFilteringCircle(outerImg, gaussianResultImg, usedPoints, y, x);
+				sf.executeSpaceFilteringCircle(outerImg, gaussianResultImg, usedPoints, y, x, log);
+
+			}
+		}
+		clock_t end = clock();
+		log.Write("inside exegaussian: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
 	}
 	void drawLinePROT(cv::Mat &srcImg, vector<pair<int, int>> &contours, int hue){
 		NeonDesign design;

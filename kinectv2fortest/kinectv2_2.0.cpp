@@ -78,15 +78,18 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	cv::Mat gaussianResultImg = cv::Mat(srcImg.rows*SCALESIZE, srcImg.cols*SCALESIZE, CV_8UC3, cv::Scalar(0, 0, 0));
 
 	CatmullSpline catmull;
-	clock_t start = clock();
 	for (int i = 0; i < approximationLine.size(); i++){
 		catmull.drawLine(outerImg, approximationLine[i], HUE);
 	}
-	catmull.exeGaussian(outerImg, gaussianResultImg, loggg);
+	clock_t start = clock();
+	catmull.exeGaussian(outerImg, gaussianResultImg, loggg); 
+
+	//catmull.exeGaussian(outerImg, gaussianResultImg);
 	//cv::blur(outerImg, gaussianResultImg, cv::Size(15, 15));
-	catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);
 	clock_t end = clock();
-	loggg.Write("draw‚©‚çinline‚Ü‚Å: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
+
+	catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);
+	loggg.Write("exegaussian: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
 	cv::imshow("outer", outerImg);
 	cv::imshow("gaussian", gaussianResultImg);
 	cv::imwrite("gaussianResultImg.png", gaussianResultImg);

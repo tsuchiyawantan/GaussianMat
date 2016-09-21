@@ -16,7 +16,6 @@
 
 #define SPACESIZE 10
 #define SCALESIZE 1
-#define FILTERSIZE 15
 #define HUE 60
 
 string hstate[] = { "unknown", "nottracked", "Open", "Closed", "Lasso" };
@@ -81,11 +80,11 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 	for (int i = 0; i < approximationLine.size(); i++){
 		catmull.drawLine(outerImg, approximationLine[i], HUE);
 	}
+
 	clock_t start = clock();
 	catmull.exeGaussian(outerImg, gaussianResultImg, loggg); 
-
 	//catmull.exeGaussian(outerImg, gaussianResultImg);
-	//cv::blur(outerImg, gaussianResultImg, cv::Size(15, 15));
+	//cv::blur(outerImg, gaussianResultImg, cv::Size(9, 9));
 	clock_t end = clock();
 
 	catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);

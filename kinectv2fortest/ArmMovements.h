@@ -167,8 +167,9 @@ public:
 	void drawInline(cv::Mat &image, vector<pair<int, int>> &yx, int hue){
 		//if (yx.size()%4 != 0) adjust(yx);
 		NeonDesign design;
+		int b = 0, g = 0, r = 0;
 		vector<int> bgr = { 0, 0, 0 };
-		design.rgb(hue, 255, 255 - 100, bgr);
+		design.rgb(hue, 255, 255 - 100, bgr, b, g, r);
 		for (int i = 0; i < yx.size(); i++){
 			int y = yx.at(i).first;
 			int x = yx.at(i).second;
@@ -188,8 +189,9 @@ public:
 	void drawLine(cv::Mat &image, vector<pair<int, int>> &yx, int hue){
 		//if (yx.size()%4 != 0) adjust(yx);
 		NeonDesign design;
+		int b = 0, g = 0, r = 0;
 		vector<int> bgr = { 0, 0, 0 };
-		design.rgb(hue, 255, 255 - 100, bgr);
+		design.rgb(hue, 255, 255 - 100, bgr, b, g, r);
 		for (int i = 0; i < yx.size(); i++){
 			int y = yx.at(i).first;
 			int x = yx.at(i).second;

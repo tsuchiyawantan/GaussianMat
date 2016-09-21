@@ -57,18 +57,20 @@ public:
 
 	}
 
-	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, vector<double> &bgr, cv::Mat &srcImg){
+	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, double &b, double &g, double &r, cv::Mat &srcImg){
 		cv::Vec3b* ptr;
-		
+		int dy, dx;
+
 		for (auto itr = neighbour.begin(); itr != neighbour.end(); ++itr){
-			int dy = y + (*itr).first;
-			int dx = x + (*itr).second;
+			dy = y + (*itr).first;
+			dx = x + (*itr).second;
 			if (dy < 0 || dy >= srcImg.rows || dx < 0 || dx >= srcImg.cols) continue;
 			ptr = srcImg.ptr<cv::Vec3b>(dy);
 
-			bgr.at(0) += ptr[dx][0] * filter;
-			bgr.at(1) += ptr[dx][1] * filter;
-			bgr.at(2) += ptr[dx][2] * filter;
+			b += ptr[dx][0] * filter;
+			g += ptr[dx][1] * filter;
+			r += ptr[dx][2] * filter;
+		
 		}
 	}
 	
@@ -86,9 +88,9 @@ public:
 		int jdef = x - 2 - CIRCLE_RADIUS;
 		int height = y + 2 + CIRCLE_RADIUS;
 		int width = x + 2 + CIRCLE_RADIUS;
-
+		cv::Vec3b* ptrResult;
+		unsigned char *p;
 		for (int i=idef; i <= height; i++) {
-			cv::Vec3b* ptrResult;
 			//
 			// 各画素ごとに
 			//
@@ -97,12 +99,12 @@ public:
 				bgr = { 0.0, 0.0, 0.0 };
 
 				//空間フィルタリング処理済み点ならば飛ばす
-				unsigned char *p = &usedPoints.at<uchar>(i, j);
+				p = &usedPoints.at<uchar>(i, j);
 				if (*p == 255) continue;
 
 				ptrResult = resultImg.ptr<cv::Vec3b>(i);
 
-				applyFiltering(i, j, neighbour, bgr, srcImg);
+				//applyFiltering(i, j, neighbour, bgr, srcImg);
 				// valueR, valueG, valueB の値を0～255の範囲にする
 				if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
 				else if (bgr.at(2) > 255.0) bgr.at(2) = 255.0;
@@ -122,9 +124,7 @@ public:
 	}
 
 	void executeSpaceFilteringCircle(cv::Mat &srcImg, cv::Mat &resultImg, cv::Mat &usedPoints, int y, int x, Log log) {
-		vector<double> bgr(3, 0.0);
-		clock_t start = clock();
-
+		double b = 0.0, g = 0.0, r = 0.0;
 		//
 		// 各スキャンラインごとに
 		//
@@ -132,39 +132,37 @@ public:
 		int jdef = x - 2 - CIRCLE_RADIUS;
 		int height = y + 2 + CIRCLE_RADIUS;
 		int width = x + 2 + CIRCLE_RADIUS;
-
+		cv::Vec3b* ptrResult;
+		unsigned char *p;
 		for (int i = idef; i <= height; i++) {
-			cv::Vec3b* ptrResult;
+			
 			//
 			// 各画素ごとに
 			//
 			for (int j = jdef; j <= width; j++) {
 				if (i < 0 || i >= srcImg.rows || j < 0 || j >= srcImg.cols) continue;
-				bgr = { 0.0, 0.0, 0.0 };
-
 				//空間フィルタリング処理済み点ならば飛ばす
-				unsigned char *p = &usedPoints.at<uchar>(i, j);
+				p = &usedPoints.at<uchar>(i, j);
 				if (*p == 255) continue;
 
+				b = 0.0;
+				g = 0.0;
+				r = 0.0;
 				ptrResult = resultImg.ptr<cv::Vec3b>(i);
 
-				applyFiltering(i, j, neighbour, bgr, srcImg);
+				applyFiltering(i, j, neighbour, b, g, r, srcImg);
 				// valueR, valueG, valueB の値を0～255の範囲にする
-				if (bgr.at(2) < 0.0) bgr.at(2) = 0.0;
-				else if (bgr.at(2) > 255.0) bgr.at(2) = 255.0;
-				if (bgr.at(1) < 0.0) bgr.at(1) = 0.0;
-				else if (bgr.at(1) > 255.0) bgr.at(1) = 255.0;
-				if (bgr.at(0) < 0.0) bgr.at(0) = 0.0;
-				else if (bgr.at(0) > 255.0) bgr.at(0) = 255.0;
+				if (r < 0.0) r = 0.0;
+				else if (r > 255.0) r = 255.0;
+				if (g < 0.0) g = 0.0;
+				else if (g > 255.0) g = 255.0;
+				if (b < 0.0) b = 0.0;
+				else if (b > 255.0) b = 255.0;
 
 
-				ptrResult[j] = cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2));
-
-				if (cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2)) != cv::Vec3b(bgr.at(0), bgr.at(0), bgr.at(0)))
-					*p = 255;
-
+				ptrResult[j] = cv::Vec3b(b,g,r);
+				*p = 255;
 			}
 		}
-		clock_t end = clock();
 	}
 };

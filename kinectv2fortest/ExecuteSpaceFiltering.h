@@ -10,7 +10,7 @@
 #include "Log.h"
 
 
-#define CIRCLE_RADIUS 2;
+#define CIRCLE_RADIUS 5;
 using namespace std;
 
 
@@ -21,6 +21,7 @@ public:
 	double filter;
 	cv::Mat image2;
 	vector<pair<int, int>> neighbour;
+	vector<pair<double, pair<double, double>>> test0927;
 
 	ExecuteSpaceFiltering(double filter_size){
 		filtersize = filter_size;
@@ -57,6 +58,7 @@ public:
 
 	}
 
+	
 	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, double &b, double &g, double &r, cv::Mat &srcImg){
 		cv::Vec3b* ptr;
 		int dy, dx;
@@ -70,8 +72,9 @@ public:
 			b += ptr[dx][0] * filter;
 			g += ptr[dx][1] * filter;
 			r += ptr[dx][2] * filter;
-		
+			
 		}
+	//	test0927.push_back(make_pair(b, make_pair(g, r)));
 	}
 	
 	//

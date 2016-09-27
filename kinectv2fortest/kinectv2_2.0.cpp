@@ -72,6 +72,7 @@ void doArm2(cv::Mat &image, Log log, vector<vector<pair<int, int>>> &yx){
 }
 
 void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLine){
+	clock_t start = clock();
 	loggg.Initialize("log1.txt");
 	cv::Mat outerImg = cv::Mat(srcImg.rows*SCALESIZE, srcImg.cols*SCALESIZE, CV_8UC3, cv::Scalar(0, 0, 0));
 	cv::Mat gaussianResultImg = cv::Mat(srcImg.rows*SCALESIZE, srcImg.cols*SCALESIZE, CV_8UC3, cv::Scalar(0, 0, 0));
@@ -81,14 +82,15 @@ void doCatmull(cv::Mat &srcImg, vector<vector<pair<int, int>>> &approximationLin
 		catmull.drawLine(outerImg, approximationLine[i], HUE);
 	}
 
-	clock_t start = clock();
+	
 	catmull.exeGaussian(outerImg, gaussianResultImg, loggg); 
 	//catmull.exeGaussian(outerImg, gaussianResultImg);
 	//cv::blur(outerImg, gaussianResultImg, cv::Size(9, 9));
-	clock_t end = clock();
+
 
 	catmull.drawInline(gaussianResultImg, HUE, FILTERSIZE);
-	loggg.Write("exegaussian: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
+	clock_t end = clock();
+	loggg.Write("exegaussian: " + to_string((double)(end-start)/CLOCKS_PER_SEC));
 	cv::imshow("outer", outerImg);
 	cv::imshow("gaussian", gaussianResultImg);
 	cv::imwrite("gaussianResultImg.png", gaussianResultImg);

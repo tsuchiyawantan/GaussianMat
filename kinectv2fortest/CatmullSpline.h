@@ -102,18 +102,15 @@ public:
 		log.Write("inside exegaussian: " + to_string((double)(end - start) / CLOCKS_PER_SEC));
 	}
 
-	void drawInline(cv::Mat &srcImg, int hue, int filtersize){
+	void drawInline(cv::Mat &srcImg, int hue){
 		NeonDesign design;
 		int b = 0, g = 0, r = 0;
-		ExecuteSpaceFiltering spf(filtersize);
-		vector<int> bgr = { 0, 0, 0 };
-		design.rgb(hue, 255 - 100, 255, bgr, b, g, r);
+		design.rgb(hue, 255 - 100, 255, b, g, r);
 		for (int i = 0; i < catmullLine.size(); i++){
 			for (int j = 0; j < catmullLine[i].size(); j++){
 				int y = catmullLine[i].at(j).first;
 				int x = catmullLine[i].at(j).second;
 				circle(srcImg, cv::Point(x, y), 0.5, cv::Scalar(b, g, r), -1, 4);
-				//spf.executeSpaceFilteringYX(y, x, srcImg, srcImg);
 			}
 		}
 
@@ -121,11 +118,10 @@ public:
 	
 	void drawLine(cv::Mat &resultImg, vector<pair<int, int>> &contours, int hue){
 		NeonDesign design;
-		vector<int> bgr = { 0, 0, 0 };
 		int b = 0, g = 0, r = 0;
 		vector<pair<int, int>> ctr;
 
-		design.rgb(hue, 255, 255 - 100, bgr, b, g, r);
+		design.rgb(hue, 255, 255 - 100, b, g, r);
 		for (int i = 0; i < contours.size(); i++){
 			int y = contours.at(i).first;
 			int x = contours.at(i).second;

@@ -5,9 +5,11 @@
 #include <sstream>
 #include <Windows.h>
 #include <time.h>
+#include <utility>
 #define _USE_MATH_DEFINES
 #include <math.h>
 #include "Log.h"
+
 
 
 #define CIRCLE_RADIUS 5;
@@ -21,7 +23,10 @@ public:
 	double filter;
 	cv::Mat image2;
 	vector<pair<int, int>> neighbour;
-	vector<pair<double, pair<double, double>>> test0927;
+	map<string, int> color_map;
+	vector<vector<pair<int, pair<int, int>>>> color_box;
+	//int two_tone[100][100];
+	vector<int> two_tone;
 
 	ExecuteSpaceFiltering(double filter_size){
 		filtersize = filter_size;
@@ -58,22 +63,42 @@ public:
 
 	}
 
-	
-	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, double &b, double &g, double &r, cv::Mat &srcImg){
-		cv::Vec3b* ptr;
+	int countBlack(cv::Mat &src_img, int y, int x, vector<pair<int, int>> &neighbour){
+		cv::Vec3b* ptr; 
+		int black = 0;
 		int dy, dx;
-
 		for (auto itr = neighbour.begin(); itr != neighbour.end(); ++itr){
 			dy = y + (*itr).first;
 			dx = x + (*itr).second;
-			if (dy < 0 || dy >= srcImg.rows || dx < 0 || dx >= srcImg.cols) continue;
-			ptr = srcImg.ptr<cv::Vec3b>(dy);
-
-			b += ptr[dx][0] * filter;
-			g += ptr[dx][1] * filter;
-			r += ptr[dx][2] * filter;
-			
+			if (dy < 0 || dy >= src_img.rows || dx < 0 || dx >= src_img.cols) continue;
+			ptr = src_img.ptr<cv::Vec3b>(dy);
+			if (cv::Vec3b(ptr[dx][0], ptr[dx][1], ptr[dx][2]) == cv::Vec3b(0, 0, 0)) black++;
 		}
+		return black;
+	}
+
+	void applyFiltering(int y, int x, vector<pair<int, int>> &neighbour, double &b, double &g, double &r, cv::Mat &src_img){
+		cv::Vec3b* ptr;
+		int dy, dx;
+		int black = 0;
+		int yellow = 0;
+
+		black = countBlack(src_img, y, x, neighbour);
+		yellow = filtersize - black;
+		if (two_tone.at(black) > 0) ;//中身があればrgbはこのまま適用
+		else {
+			for (auto itr = neighbour.begin(); itr != neighbour.end(); ++itr){
+				dy = y + (*itr).first;
+				dx = x + (*itr).second;
+				if (dy < 0 || dy >= src_img.rows || dx < 0 || dx >= src_img.cols) continue;
+				ptr = src_img.ptr<cv::Vec3b>(dy);
+
+				b += ptr[dx][0] * filter;
+				g += ptr[dx][1] * filter;
+				r += ptr[dx][2] * filter;
+			}
+		}
+		//two_tone[black][yellow]++;
 	//	test0927.push_back(make_pair(b, make_pair(g, r)));
 	}
 	
@@ -102,6 +127,8 @@ public:
 				bgr = { 0.0, 0.0, 0.0 };
 
 				//空間フィルタリング処理済み点ならば飛ばす
+				//usedpointsは黒キャンバス
+				//処理済みは白点になっている
 				p = &usedPoints.at<uchar>(i, j);
 				if (*p == 255) continue;
 
@@ -119,9 +146,8 @@ public:
 
 				ptrResult[j] = cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2));
 
-				if (cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2)) != cv::Vec3b(bgr.at(0), bgr.at(0), bgr.at(0)))
+				if (cv::Vec3b(bgr.at(0), bgr.at(1), bgr.at(2)) != cv::Vec3b(0, 0, 0))
 					*p = 255;
-				
 			}
 		}
 	}

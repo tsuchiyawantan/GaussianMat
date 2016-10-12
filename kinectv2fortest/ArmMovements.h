@@ -169,7 +169,7 @@ public:
 		NeonDesign design;
 		int b = 0, g = 0, r = 0;
 		vector<int> bgr = { 0, 0, 0 };
-		design.rgb(hue, 255, 255 - 100, bgr, b, g, r);
+		design.rgb(hue, 255, 255 - 100, b, g, r);
 		for (int i = 0; i < yx.size(); i++){
 			int y = yx.at(i).first;
 			int x = yx.at(i).second;
@@ -191,7 +191,7 @@ public:
 		NeonDesign design;
 		int b = 0, g = 0, r = 0;
 		vector<int> bgr = { 0, 0, 0 };
-		design.rgb(hue, 255, 255 - 100, bgr, b, g, r);
+		design.rgb(hue, 255, 255 - 100, b, g, r);
 		for (int i = 0; i < yx.size(); i++){
 			int y = yx.at(i).first;
 			int x = yx.at(i).second;

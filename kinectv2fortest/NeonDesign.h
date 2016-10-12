@@ -13,7 +13,7 @@ private:
 public:
 	NeonDesign(){}
 	~NeonDesign(){}
-	void rgb(double H, double S, double V, vector<int> &bgr, int &b, int &g, int &r){
+	void rgb(double H, double S, double V, int &b, int &g, int &r){
 		int Hi;
 		double f, p, q, t;
 
